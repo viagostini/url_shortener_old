@@ -1,5 +1,4 @@
 from datetime import timedelta
-from fastapi.exceptions import HTTPException
 
 import redis
 from fastapi import FastAPI
