@@ -40,27 +40,12 @@ async def create_shortlink(url, custom_shortlink=None):
     else:
         if await shortlinks.find_one({ "_id": custom_shortlink }):
             return None
-
     await shortlinks.insert_one({
         "_id": new_shortlink,
         "url": url,
         "createdAt": datetime.now()
     })
     return new_shortlink
-
-
-async def create_custom_shortlink(url, custom_shortlink):
-    shortlinks = shortlinks_collection()
-    res = await shortlinks.find_one({ "_id": custom_shortlink })
-    if res:
-        return None
-    else:
-        await shortlinks.insert_one({
-            "_id": custom_shortlink,
-            "url": url,
-            "createdAt": datetime.now()
-        })
-        return custom_shortlink
 
 async def get_url(shortlink):
     shortlinks = shortlinks_collection()
