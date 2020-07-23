@@ -30,9 +30,17 @@ def shortlinks_collection():
     return mongo_db.shortlinks
 
 
-async def create_shortlink(url):
+
+
+async def create_shortlink(url, custom_shortlink=None):
     shortlinks = shortlinks_collection()
-    new_shortlink = await unique_random_shortlink(shortlinks)
+    new_shortlink = custom_shortlink
+    if not custom_shortlink:
+        new_shortlink = await unique_random_shortlink(shortlinks)
+    else:
+        if await shortlinks.find_one({ "_id": custom_shortlink }):
+            return None
+
     await shortlinks.insert_one({
         "_id": new_shortlink,
         "url": url,
@@ -40,7 +48,21 @@ async def create_shortlink(url):
     })
     return new_shortlink
 
+
+async def create_custom_shortlink(url, custom_shortlink):
+    shortlinks = shortlinks_collection()
+    res = await shortlinks.find_one({ "_id": custom_shortlink })
+    if res:
+        return None
+    else:
+        await shortlinks.insert_one({
+            "_id": custom_shortlink,
+            "url": url,
+            "createdAt": datetime.now()
+        })
+        return custom_shortlink
+
 async def get_url(shortlink):
     shortlinks = shortlinks_collection()
     res = await shortlinks.find_one({ "_id": shortlink })
-    return res['url']
+    return res
