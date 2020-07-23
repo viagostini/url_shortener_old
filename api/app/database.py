@@ -1,8 +1,11 @@
 import os
+from datetime import datetime
 from operator import itemgetter
 
 import motor.motor_asyncio
 from dotenv import load_dotenv
+
+from .utils import unique_random_shortlink
 
 def get_user_credentials():
     load_dotenv()
@@ -25,3 +28,19 @@ def shortlinks_collection():
     client = motor.motor_asyncio.AsyncIOMotorClient(server)
     mongo_db = client['URLShortener']
     return mongo_db.shortlinks
+
+
+async def create_shortlink(url):
+    shortlinks = shortlinks_collection()
+    new_shortlink = await unique_random_shortlink(shortlinks)
+    await shortlinks.insert_one({
+        "_id": new_shortlink,
+        "url": url,
+        "createdAt": datetime.now()
+    })
+    return new_shortlink
+
+async def get_url(shortlink):
+    shortlinks = shortlinks_collection()
+    res = await shortlinks.find_one({ "_id": shortlink })
+    return res['url']
